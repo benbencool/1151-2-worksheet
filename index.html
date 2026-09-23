@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>課堂作品繳交版</title>
+<style>
+:root{
+  --bg:#f3f0e8;
+  --paper:#fff;
+  --ink:#202020;
+  --muted:#6b665e;
+  --line:#d7d0c4;
+  --accent:#1d5e78;
+  --accent-soft:#eaf3f7;
+  --warn:#9d5e00;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  color:var(--ink);
+  background:var(--bg);
+}
+.app{
+  max-width:980px;
+  margin:auto;
+  padding:24px 16px 48px;
+}
+.toolbar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:16px;
+}
+button,.file-btn{
+  min-height:44px;
+  border:2px solid var(--ink);
+  border-radius:12px;
+  padding:10px 16px;
+  background:#fff;
+  font-weight:800;
+  font-size:1rem;
+  cursor:pointer;
+}
+.primary{
+  background:var(--accent);
+  color:#fff;
+  border-color:var(--accent);
+}
+.file-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.file-btn input{display:none}
+.sheet{
+  width:100%;
+  background:var(--paper);
+  border:2px solid var(--ink);
+  box-shadow:8px 8px 0 rgba(0,0,0,.08);
+  border-radius:16px;
+  padding:24px;
+}
+h1{
+  margin:0 0 4px;
+  font-size:clamp(1.8rem,4vw,2.6rem);
+}
+.sub{
+  color:var(--muted);
+  margin:0 0 18px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:10px;
+}
+.field label{
+  display:block;
+  font-weight:800;
+  margin-bottom:5px;
+}
+.field input,.field textarea{
+  width:100%;
+  border:2px solid var(--ink);
+  border-radius:10px;
+  padding:10px 12px;
+  font:inherit;
+  background:#fff;
+}
+.field textarea{
+  min-height:64px;
+  resize:vertical;
+}
+.full{grid-column:1/-1}
+.rule{
+  margin:16px 0;
+  padding:12px 14px;
+  border-left:6px solid var(--accent);
+  background:var(--accent-soft);
+  font-weight:800;
+  line-height:1.6;
+}
+.photo-wrap{
+  margin-top:14px;
+}
+.photo-title{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:end;
+  flex-wrap:wrap;
+  margin-bottom:8px;
+}
+.photo-title strong{font-size:1.1rem}
+.photo-box{
+  min-height:520px;
+  border:3px dashed var(--line);
+  border-radius:14px;
+  background:#faf9f6;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  position:relative;
+}
+.photo-box img{
+  display:none;
+  max-width:100%;
+  max-height:680px;
+  width:auto;
+  height:auto;
+  object-fit:contain;
+}
+.placeholder{
+  text-align:center;
+  color:var(--muted);
+  padding:30px;
+  line-height:1.7;
+}
+.meta{
+  margin-top:8px;
+  font-size:.9rem;
+  color:var(--muted);
+}
+.footer-note{
+  margin-top:14px;
+  font-size:.9rem;
+  color:var(--muted);
+}
+.print-only{display:none}
+@media(max-width:720px){
+  .grid{grid-template-columns:1fr}
+  .full{grid-column:auto}
+  .sheet{padding:16px}
+  .photo-box{min-height:360px}
+}
+@media print{
+  @page{size:A4 portrait;margin:10mm}
+  body{background:#fff}
+  .app{padding:0;max-width:none}
+  .toolbar,.no-print{display:none!important}
+  .sheet{
+    border:0;
+    box-shadow:none;
+    border-radius:0;
+    padding:0;
+  }
+  h1{font-size:20pt}
+  .sub{font-size:10pt}
+  .grid{grid-template-columns:1fr 1fr 1fr}
+  .field input,.field textarea{
+    border:0;
+    border-bottom:1px solid #555;
+    border-radius:0;
+    padding:4px 0;
+  }
+  .field textarea{min-height:34px}
+  .rule{
+    margin:10px 0;
+    padding:8px 10px;
+    border-left:4px solid #555;
+    background:#f5f5f5!important;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+  .photo-box{
+    min-height:0;
+    height:205mm;
+    border:1px solid #999;
+    border-radius:0;
+    background:#fff;
+  }
+  .photo-box img{
+    max-width:100%;
+    max-height:100%;
+    width:auto;
+    height:auto;
+  }
+  .placeholder{display:none!important}
+  .meta,.footer-note{font-size:8pt}
+  .print-only{display:block}
+}
+</style>
+</head>
+<body>
+<main class="app">
+  <div class="toolbar no-print">
+    <label class="file-btn primary">
+      上傳作品照片
+      <input id="photoInput" type="file" accept="image/*">
+    </label>
+    <button id="rotateBtn" type="button">旋轉照片</button>
+    <button id="clearPhotoBtn" type="button">清除照片</button>
+    <button id="printBtn" type="button" class="primary">輸出 PDF</button>
+  </div>
+
+  <section class="sheet">
+    <h1>課堂作品繳交版</h1>
+    <p class="sub">每次課堂都可以使用：填資料 → 貼上作品照片 → 輸出 PDF。</p>
+
+    <div class="grid">
+      <div class="field">
+        <label for="className">班級</label>
+        <input id="className" type="text" placeholder="例如：四公廣二A">
+      </div>
+      <div class="field">
+        <label for="studentNo">學號</label>
+        <input id="studentNo" type="text" placeholder="請輸入學號">
+      </div>
+      <div class="field">
+        <label for="studentName">姓名</label>
+        <input id="studentName" type="text" placeholder="請輸入姓名">
+      </div>
+
+      <div class="field full">
+        <label for="topic">今天的題目是：</label>
+        <input id="topic" type="text" placeholder="例如：繪圖單字">
+      </div>
+
+      <div class="field full">
+        <label for="practice">我今天練習了：</label>
+        <textarea id="practice" placeholder="例如：人物、表情、箭頭、框、ICON"></textarea>
+      </div>
+    </div>
+
+    <div class="rule">
+      ✋ 畫圖請不要縮在角落：單一人物、表情或 ICON 盡量至少「手掌大」；人物動作約 8–10 公分高，盡量使用練習格的 1/2～2/3 空間。
+    </div>
+
+    <div class="photo-wrap">
+      <div class="photo-title">
+        <strong>我的作品</strong>
+        <span class="no-print">請把紙本作品拍清楚後上傳。照片會自動縮圖與壓縮。</span>
+      </div>
+
+      <div class="photo-box" id="photoBox">
+        <div class="placeholder" id="placeholder">
+          <div style="font-size:2.2rem;margin-bottom:8px">🖼️</div>
+          上傳後，作品照片會放在這個大版面中。<br>
+          直式或橫式照片都可以，系統會自動等比例縮放，不裁切作品。
+        </div>
+        <img id="preview" alt="學生作品預覽">
+      </div>
+      <div class="meta" id="meta">尚未上傳照片</div>
+    </div>
+
+    <p class="footer-note">輸出方式：按「輸出 PDF」後，在列印視窗選擇「另存為 PDF」。</p>
+  </section>
+</main>
+
+<script>
+(() => {
+  const input = document.getElementById('photoInput');
+  const preview = document.getElementById('preview');
+  const placeholder = document.getElementById('placeholder');
+  const meta = document.getElementById('meta');
+  const rotateBtn = document.getElementById('rotateBtn');
+  const clearBtn = document.getElementById('clearPhotoBtn');
+  const printBtn = document.getElementById('printBtn');
+
+  let currentDataUrl = '';
+  let rotation = 0;
+
+  function formatBytes(bytes){
+    if(!Number.isFinite(bytes) || bytes <= 0) return '';
+    if(bytes < 1024) return bytes + ' B';
+    if(bytes < 1024*1024) return (bytes/1024).toFixed(0) + ' KB';
+    return (bytes/1024/1024).toFixed(2) + ' MB';
+  }
+
+  function drawCompressed(file){
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const maxSide = 1800;
+        let w = img.naturalWidth;
+        let h = img.naturalHeight;
+        const scale = Math.min(1, maxSide / Math.max(w,h));
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d', {alpha:false});
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0,0,w,h);
+        ctx.drawImage(img,0,0,w,h);
+
+        currentDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+        rotation = 0;
+        preview.style.transform = 'rotate(0deg)';
+        preview.src = currentDataUrl;
+        preview.style.display = 'block';
+        placeholder.style.display = 'none';
+
+        const approxBytes = Math.round((currentDataUrl.length - currentDataUrl.indexOf(',') - 1) * 0.75);
+        meta.textContent = `原始照片：${formatBytes(file.size)}　→　版面用壓縮圖：約 ${formatBytes(approxBytes)}；長邊最多 1800px。`;
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  input.addEventListener('change', () => {
+    const file = input.files && input.files[0];
+    if(!file) return;
+    if(!file.type.startsWith('image/')){
+      alert('請選擇圖片檔。');
+      input.value = '';
+      return;
+    }
+    drawCompressed(file);
+  });
+
+  rotateBtn.addEventListener('click', () => {
+    if(!currentDataUrl){
+      alert('請先上傳作品照片。');
+      return;
+    }
+    rotation = (rotation + 90) % 360;
+    preview.style.transform = `rotate(${rotation}deg)`;
+  });
+
+  clearBtn.addEventListener('click', () => {
+    currentDataUrl = '';
+    rotation = 0;
+    input.value = '';
+    preview.removeAttribute('src');
+    preview.style.display = 'none';
+    preview.style.transform = 'rotate(0deg)';
+    placeholder.style.display = 'block';
+    meta.textContent = '尚未上傳照片';
+  });
+
+  printBtn.addEventListener('click', () => {
+    const no = document.getElementById('studentNo').value.trim();
+    const name = document.getElementById('studentName').value.trim();
+    const topic = document.getElementById('topic').value.trim();
+
+    if(!no || !name){
+      alert('請先填寫學號與姓名。');
+      return;
+    }
+    if(!topic){
+      alert('請先填寫「今天的題目是」。');
+      return;
+    }
+    if(!currentDataUrl){
+      alert('請先上傳作品照片。');
+      return;
+    }
+    window.print();
+  });
+})();
+</script>
+</body>
+</html>
